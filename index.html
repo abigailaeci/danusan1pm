@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Danusan 1PM</title>
+    <!-- Tailwind CSS untuk Desain -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- React & Babel untuk menjalankan JSX di Browser -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .safe-top { padding-top: max(1rem, env(safe-area-inset-top)); }
+        .safe-bottom { padding-bottom: max(1rem, env(safe-area-inset-bottom)); }
+        @supports (-webkit-touch-callout: none) { .min-h-screen { min-height: -webkit-fill-available; } }
+    </style>
+</head>
+<body class="bg-slate-900">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useMemo, useEffect } = React;
+
+        // GANTI URL INI dengan URL dari Google Apps Script Anda
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzAL7erg8FV1heaOw_jduzZ3mXm3ZgSAeP8ZSEbsiYtB86juN8ZBkXRFyj6ZBxqSJYonA/exec";
+
+        const MENU_DATA = [
+            { id: 1, name: "Nasi Ayam Geprek", price: 13000, category: "Makanan Utama" },
+            { id: 2, name: "Nasi Ayam Kebuli", price: 15000, category: "Makanan Utama" },
+            { id: 3, name: "Tahu Gimbal Telur", price: 23000, category: "Makanan Utama" },
+            { id: 4, name: "Siomay", price: 7000, category: "Snack" },
+            { id: 5, name: "Nasi Bakar", price: 13000, category: "Makanan Utama" },
+            { id: 6, name: "Lupis", price: 13000, category: "Snack" },
+            { id: 7, name: "Tahu Bakso", price: 4000, category: "Snack" },
+            { id: 8, name: "Risoles Smoked Beef", price: 25000, category: "Snack" },
+            { id: 9, name: "Gorengan isi 4", price: 10000, category: "Snack" },
+            { id: 10, name: "Jus Jambu", price: 10000, category: "Minuman" },
+            { id: 11, name: "Jus Kedondong", price: 13000, category: "Minuman" },
+            { id: 12, name: "Chocolate", price: 13000, category: "Minuman" },
+            { id: 13, name: "Matcha", price: 13000, category: "Minuman" },
+            { id: 14, name: "Artisan Tea", price: 13000, category: "Minuman" },
+        ];
+
+        function App() {
+            const [userName, setUserName] = useState("");
+            const [isStarted, setIsStarted] = useState(false);
+            const [cart, setCart] = useState({});
+            const [showSummary, setShowSummary] = useState(false);
+            const [isSubmitting, setIsSubmitting] = useState(false);
+
+            // Inisialisasi icon lucide
+            useEffect(() => { lucide.createIcons(); }, [isStarted, showSummary]);
+
+            const updateQuantity = (id, delta) => {
+                setCart(prev => {
+                    const currentQty = prev[id] || 0;
+                    const newQty = Math.max(0, currentQty + delta);
+                    if (newQty === 0) {
+                        const { [id]: _, ...rest } = prev;
+                        return rest;
+                    }
+                    return { ...prev, [id]: newQty };
+                });
+            };
+
+            const cartItems = useMemo(() => {
+                return Object.entries(cart).map(([id, qty]) => {
+                    const item = MENU_DATA.find(m => m.id === parseInt(id));
+                    return { ...item, qty, subtotal: item.price * qty };
+                });
+            }, [cart]);
+
+            const totalPrice = cartItems.reduce((sum, item) => sum + item.subtotal, 0);
+
+            const formatIDR = (amount) => {
+                return new Intl.NumberFormat('id-ID', {
+                    style: 'currency',
+                    currency: 'IDR',
+                    minimumFractionDigits: 0,
+                }).format(amount);
+            };
+
+            const sendToSpreadsheet = async () => {
+                if (!GOOGLE_SCRIPT_URL) {
+                    alert("URL Spreadsheet belum diisi.");
+                    return;
+                }
+                setIsSubmitting(true);
+                const itemsPayload = {};
+                cartItems.forEach(item => { itemsPayload[item.name] = item.qty; });
+
+                try {
+                    await fetch(GOOGLE_SCRIPT_URL, {
+                        method: "POST",
+                        mode: "no-cors",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            nama: userName,
+                            total: totalPrice,
+                            items: itemsPayload
+                        })
+                    });
+                    alert("Pesanan Berhasil Dicatat!");
+                    setCart({});
+                    setShowSummary(false);
+                } catch (error) {
+                    alert("Terjadi kesalahan.");
+                } finally {
+                    setIsSubmitting(false);
+                }
+            };
+
+            const categories = [...new Set(MENU_DATA.map(item => item.category))];
+
+            if (!isStarted) {
+                return (
+                    <div className="min-h-screen bg-slate-900 flex items-center justify-center p-6">
+                        <div className="w-full max-w-md bg-white rounded-[2.5rem] p-8 shadow-2xl space-y-8 text-center">
+                            <h1 className="text-3xl font-black text-slate-800 tracking-tighter">DANUSAN 1PM</h1>
+                            <input 
+                                type="text" 
+                                placeholder="Nama Lengkap" 
+                                className="w-full px-6 py-4 bg-slate-100 border-none rounded-2xl font-bold text-slate-800 outline-none focus:ring-2 focus:ring-orange-500"
+                                value={userName}
+                                onChange={(e) => setUserName(e.target.value)}
+                            />
+                            <button 
+                                disabled={!userName.trim()}
+                                onClick={() => setIsStarted(true)}
+                                className="w-full py-4 bg-orange-600 text-white font-black rounded-2xl shadow-xl disabled:opacity-50"
+                            >
+                                LIHAT MENU
+                            </button>
+                        </div>
+                    </div>
+                );
+            }
+
+            return (
+                <div className="flex flex-col min-h-screen bg-slate-50 font-sans text-slate-900">
+                    <header className="bg-white border-b sticky top-0 z-30 p-4 shadow-sm safe-top">
+                        <div className="max-w-2xl mx-auto flex justify-between items-center">
+                            <div>
+                                <h1 className="text-xl font-black text-slate-800">DANUSAN 1PM</h1>
+                                <p className="text-[10px] font-bold text-orange-600 uppercase">👤 {userName}</p>
+                            </div>
+                            <div className="p-2 bg-slate-100 rounded-full relative">
+                                <i data-lucide="shopping-cart" class="w-5 h-5 text-slate-600"></i>
+                                {cartItems.length > 0 && (
+                                    <span className="absolute -top-1 -right-1 bg-orange-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+                                        {cartItems.reduce((a, b) => a + b.qty, 0)}
+                                    </span>
+                                )}
+                            </div>
+                        </div>
+                    </header>
+
+                    <main className="flex-grow max-w-2xl mx-auto w-full p-4 space-y-8 pb-40">
+                        {categories.map(category => (
+                            <div key={category} className="space-y-3">
+                                <h2 className="text-xs font-black text-slate-400 uppercase tracking-widest">{category}</h2>
+                                <div className="grid gap-2">
+                                    {MENU_DATA.filter(item => item.category === category).map((item) => (
+                                        <div key={item.id} className="bg-white p-5 rounded-xl shadow-sm border flex justify-between items-center">
+                                            <div>
+                                                <h3 className="font-bold text-slate-800">{item.name}</h3>
+                                                <p className="text-sm text-slate-500">{formatIDR(item.price)}</p>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                {cart[item.id] > 0 ? (
+                                                    <div className="flex items-center bg-slate-50 rounded-lg p-1 border">
+                                                        <button onClick={() => updateQuantity(item.id, -1)} className="w-8 h-8 flex items-center justify-center bg-white rounded border"><i data-lucide="minus" class="w-3 h-3"></i></button>
+                                                        <span className="w-8 text-center font-bold">{cart[item.id]}</span>
+                                                        <button onClick={() => updateQuantity(item.id, 1)} className="w-8 h-8 flex items-center justify-center bg-slate-800 rounded text-white"><i data-lucide="plus" class="w-3 h-3"></i></button>
+                                                    </div>
+                                                ) : (
+                                                    <button onClick={() => updateQuantity(item.id, 1)} className="bg-slate-800 text-white px-5 py-2 rounded-lg text-sm font-bold">Pilih</button>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        ))}
+                    </main>
+
+                    {totalPrice > 0 && (
+                        <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/95 backdrop-blur-md border-t z-40 safe-bottom">
+                            <div className="max-w-2xl mx-auto flex items-center justify-between gap-4">
+                                <div className="flex flex-col">
+                                    <span className="text-[10px] text-slate-400 font-bold uppercase">Total</span>
+                                    <span className="text-xl font-black">{formatIDR(totalPrice)}</span>
+                                </div>
+                                <button onClick={() => setShowSummary(true)} className="flex-1 bg-orange-600 text-white py-4 rounded-xl font-black">PROSES PESANAN</button>
+                            </div>
+                        </div>
+                    )}
+
+                    {showSummary && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                            <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-md" onClick={() => !isSubmitting && setShowSummary(false)} />
+                            <div className="relative bg-white w-full max-w-md rounded-[2rem] overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+                                <div className="p-6 border-b bg-slate-50 text-center">
+                                    <h2 className="text-xl font-black text-slate-800">REKAPAN PESANAN</h2>
+                                    <p className="text-xs text-orange-600 font-bold">PEMBELI: {userName}</p>
+                                </div>
+                                <div className="p-6 space-y-4 overflow-y-auto">
+                                    {cartItems.map((item) => (
+                                        <div key={item.id} className="flex justify-between items-center border-b border-slate-50 pb-2">
+                                            <span className="font-bold text-slate-700">{item.name} ({item.qty}x)</span>
+                                            <span className="font-bold">{formatIDR(item.subtotal)}</span>
+                                        </div>
+                                    ))}
+                                    <div className="p-4 bg-orange-50 border-2 border-dashed border-orange-200 rounded-2xl flex justify-between">
+                                        <span className="font-black">TOTAL AKHIR</span>
+                                        <span className="text-xl font-black text-orange-600">{formatIDR(totalPrice)}</span>
+                                    </div>
+                                </div>
+                                <div className="p-6 pt-2 space-y-3">
+                                    <button onClick={() => setShowSummary(false)} className="w-full py-3 bg-white border-2 text-slate-600 font-black rounded-xl">KEMBALI</button>
+                                    <button onClick={sendToSpreadsheet} disabled={isSubmitting} className="w-full py-4 bg-slate-900 text-white font-black rounded-xl flex justify-center items-center gap-2">
+                                        {isSubmitting ? "MENCATAT..." : "KONFIRMASI SELESAI"}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
