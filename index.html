@@ -33,7 +33,8 @@
             { id: 1, name: "Nasi Ayam Geprek", price: 13000, category: "Makanan Utama" },
             { id: 2, name: "Nasi Ayam Kebuli", price: 15000, category: "Makanan Utama" },
             { id: 3, name: "Tahu Gimbal Telur", price: 23000, category: "Makanan Utama" },
-            { id: 4, name: "Siomay", price: 7000, category: "Snack" },
+            { id: 4, name: "Siomay Basah", price: 7000, category: "Snack" },
+            { id: 15, name: "Siomay Kering", price: 7000, category: "Snack" },
             { id: 5, name: "Nasi Bakar", price: 13000, category: "Makanan Utama" },
             { id: 6, name: "Lupis", price: 13000, category: "Snack" },
             { id: 7, name: "Tahu Bakso", price: 4000, category: "Snack" },
@@ -53,7 +54,6 @@
             const [showSummary, setShowSummary] = useState(false);
             const [isSubmitting, setIsSubmitting] = useState(false);
 
-            // Inisialisasi icon lucide
             useEffect(() => { lucide.createIcons(); }, [isStarted, showSummary]);
 
             const updateQuantity = (id, delta) => {
@@ -167,8 +167,8 @@
                                 <div className="grid gap-2">
                                     {MENU_DATA.filter(item => item.category === category).map((item) => (
                                         <div key={item.id} className="bg-white p-5 rounded-xl shadow-sm border flex justify-between items-center">
-                                            <div>
-                                                <h3 className="font-bold text-slate-800">{item.name}</h3>
+                                            <div className="pr-4">
+                                                <h3 className="font-bold text-slate-800 leading-tight">{item.name}</h3>
                                                 <p className="text-sm text-slate-500">{formatIDR(item.price)}</p>
                                             </div>
                                             <div className="flex items-center gap-2">
