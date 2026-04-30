@@ -29,7 +29,7 @@
         const { useState, useMemo, useEffect } = React;
 
         // URL GOOGLE APPS SCRIPT ANDA
-        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwEzV0qs4O0xZ7NcyfBfYRDYppI1e7Rv5pT0Z5P6IUjHt8Mb7dJgLOjZ0Vxce7r_FMLbQ/exec";
+        const GOOGLE_SCRIPT_URL = "";
 
         const MENU_DATA = [
             { id: 1, name: "Nasi Bakar", price: 15000, category: "Makanan" },
@@ -89,7 +89,7 @@
             const formatIDR = (num) => "Rp " + num.toLocaleString('id-ID');
 
             const sendToSpreadsheet = async () => {
-                if (!GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL === "URL_SCRIPT_DEPLOY_ANDA") {
+                if (!GOOGLE_SCRIPT_URL) {
                     alert("Mohon masukkan URL Google Script Anda terlebih dahulu di bagian kode!");
                     return;
                 }
@@ -122,18 +122,18 @@
 
             if (!isStarted) {
                 return (
-                    <div className="min-h-screen flex items-center justify-center p-6 bg-slate-900">
+                    <div className="min-h-screen flex items-center justify-center p-6 bg-slate-900 text-slate-900">
                         <div className="w-full max-w-md bg-white rounded-[2.5rem] p-10 shadow-2xl space-y-8 text-center border-t-[10px] border-emerald-500 transition-all">
                             <div className="space-y-4">
                                 <span className="bg-emerald-100 text-emerald-600 px-5 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.3em]">Danusan Batch 4</span>
-                                <h1 className="text-4xl font-black text-slate-800 tracking-tighter uppercase leading-none">ORDER<br/>DANUS</h1>
-                                <p className="text-slate-400 font-bold text-[10px] uppercase tracking-[0.2em]">Kantin 1PM - Minggu Keempat</p>
+                                <h1 className="text-4xl font-black text-slate-800 tracking-tighter uppercase leading-none mt-2">MENU DANUSAN<br/>BATCH 4</h1>
+                                <p className="text-slate-400 font-bold text-[10px] uppercase tracking-[0.2em]">Pesan makanan dengan mudah</p>
                             </div>
                             <div className="space-y-4 pt-4">
                                 <input 
                                     type="text" 
                                     placeholder="Tulis namamu di sini..." 
-                                    className="w-full px-6 py-5 bg-slate-50 border-2 border-slate-100 rounded-3xl font-bold text-center text-slate-800 outline-none focus:border-emerald-400 transition-all placeholder:text-slate-300"
+                                    className="w-full px-6 py-5 bg-slate-50 border-2 border-slate-100 rounded-3xl font-bold text-center text-slate-800 outline-none focus:border-emerald-400 transition-all placeholder:text-slate-300 shadow-inner"
                                     value={userName}
                                     onChange={(e) => setUserName(e.target.value)}
                                 />
@@ -142,7 +142,7 @@
                                     onClick={() => setIsStarted(true)}
                                     className="w-full py-5 bg-emerald-600 text-white font-black rounded-3xl shadow-xl shadow-emerald-900/20 disabled:opacity-30 active:scale-95 transition-all uppercase tracking-widest text-sm"
                                 >
-                                    Cek Menu
+                                    Pesan Sekarang
                                 </button>
                             </div>
                         </div>
@@ -155,13 +155,13 @@
                     <header className="bg-white/90 backdrop-blur-md border-b sticky top-0 z-30 px-5 py-4 safe-top shadow-sm">
                         <div className="max-w-2xl mx-auto flex justify-between items-center">
                             <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 bg-emerald-600 rounded-2xl flex items-center justify-center text-white font-black italic">4</div>
+                                <div className="w-10 h-10 bg-emerald-600 rounded-2xl flex items-center justify-center text-white font-black italic shadow-lg shadow-emerald-100">4</div>
                                 <div>
-                                    <h1 className="text-lg font-black leading-none text-slate-800">DANUSAN <span className="text-emerald-600">1PM</span></h1>
+                                    <h1 className="text-lg font-black leading-none text-slate-800">DANUSAN <span className="text-emerald-600">BATCH 4</span></h1>
                                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">🛒 {userName}</p>
                                 </div>
                             </div>
-                            <button onClick={() => setIsStarted(false)} className="text-slate-300 hover:text-red-500 transition-colors">
+                            <button onClick={() => setIsStarted(false)} className="bg-slate-100 p-2.5 rounded-xl text-slate-400 hover:text-red-500 transition-colors">
                                 <i data-lucide="log-out" className="w-5 h-5"></i>
                             </button>
                         </div>
@@ -225,7 +225,9 @@
                                 <div className="p-8 text-center border-b bg-slate-50/50">
                                     <div className="w-16 h-1 bg-slate-200 rounded-full mx-auto mb-6"></div>
                                     <h2 className="text-xl font-black uppercase tracking-tighter text-slate-800">Cek Pesananmu</h2>
-                                    <p className="text-[10px] font-black text-emerald-600 mt-1 uppercase tracking-widest leading-relaxed">Minggu 4 • Order ID #1PM-M4</p>
+                                    {/* Nama pemesan di bawah judul ringkasan */}
+                                    <p className="text-sm font-bold text-emerald-600 mt-2 uppercase tracking-widest">{userName}</p>
+                                    <p className="text-[9px] font-black text-slate-400 mt-1 uppercase tracking-widest leading-relaxed">Danusan Batch 4</p>
                                 </div>
                                 
                                 <div className="p-8 space-y-6 overflow-y-auto flex-grow custom-scrollbar">
@@ -240,11 +242,11 @@
                                     ))}
                                     
                                     <div className="mt-8 p-6 bg-emerald-600 rounded-[2rem] flex justify-between items-center shadow-lg shadow-emerald-200">
-                                        <div className="flex flex-col">
+                                        <div className="flex flex-col text-white">
                                             <span className="font-black text-white/60 text-[9px] uppercase tracking-widest leading-none mb-1">Total Akhir</span>
-                                            <span className="text-2xl font-black text-white">{formatIDR(totalPrice)}</span>
+                                            <span className="text-2xl font-black tracking-tighter">{formatIDR(totalPrice)}</span>
                                         </div>
-                                        <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center text-white">
+                                        <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center text-white shadow-inner">
                                             <i data-lucide="receipt" className="w-5 h-5"></i>
                                         </div>
                                     </div>
@@ -255,13 +257,13 @@
                                         {isSubmitting ? (
                                             <>
                                                 <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
-                                                <span>Memproses...</span>
+                                                <span>Mengirim...</span>
                                             </>
                                         ) : (
-                                            "Kirim Pesanan Sekarang"
+                                            "Kirim Pesanan"
                                         )}
                                     </button>
-                                    <button onClick={() => setShowSummary(false)} className="w-full py-3 text-slate-400 font-bold text-[10px] uppercase tracking-widest hover:text-slate-600">Batal / Ubah</button>
+                                    <button onClick={() => setShowSummary(false)} className="w-full py-3 text-slate-400 font-bold text-[10px] uppercase tracking-widest hover:text-slate-600">Kembali</button>
                                 </div>
                             </div>
                         </div>
